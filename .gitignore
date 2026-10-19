@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+node_modules/
+.ipynb_checkpoints/
+models/*.joblib
+data/raw/*
+data/processed/*
+!data/README.md
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+.DS_Store
