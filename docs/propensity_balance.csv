@@ -1,0 +1,22 @@
+feature,$10 vs $0 before,$10 vs $0 after,$20 vs $0 before,$20 vs $0 after
+numeric__income_bracket,-0.031,0.0,-0.059,-0.001
+numeric__is_new_customer,0.145,0.007,0.205,0.01
+numeric__buys_mens,0.018,-0.003,0.016,-0.001
+numeric__buys_womens,-0.011,0.004,-0.011,0.003
+numeric__months_since_last_purchase,0.405,0.013,0.63,0.017
+numeric__past_spend,0.024,-0.003,0.002,-0.0
+numeric__site_visits_90d,-0.233,-0.008,-0.349,-0.015
+numeric__loyalty_score,-0.297,-0.014,-0.43,-0.019
+numeric__coupon_usage_rate,0.27,0.013,0.41,0.022
+categorical__age_group_18-25,0.009,-0.001,0.003,-0.004
+categorical__age_group_26-35,-0.008,0.0,0.0,-0.001
+categorical__age_group_36-45,0.004,0.004,-0.011,0.002
+categorical__age_group_46-55,0.003,-0.001,0.012,0.0
+categorical__age_group_56-70,-0.008,0.001,0.006,-0.001
+categorical__age_group_70+,0.0,-0.004,-0.012,0.002
+categorical__region_type_Rural,0.008,-0.0,0.017,0.0
+categorical__region_type_Suburban,0.009,-0.0,0.007,-0.0
+categorical__region_type_Urban,-0.015,0.0,-0.02,0.0
+categorical__purchase_channel_Multichannel,0.01,0.002,-0.012,0.002
+categorical__purchase_channel_Phone,0.001,-0.004,0.006,0.0
+categorical__purchase_channel_Web,-0.008,0.003,0.002,-0.001

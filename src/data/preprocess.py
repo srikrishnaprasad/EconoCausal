@@ -104,7 +104,7 @@ def make_preprocessor():
     categorical_pipeline = Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="most_frequent")),
-            ("onehot", OneHotEncoder(handle_unknown="ignore")),
+            ("onehot", OneHotEncoder(handle_unknown="ignore",sparse_output=False)),
         ]
     )
 
@@ -382,3 +382,5 @@ if __name__ == "__main__":
         )
 
     print("\nPreprocessing completed successfully.")
+
+            
