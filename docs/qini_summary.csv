@@ -1,0 +1,19 @@
+view,discount,method,AUUC,Qini coefficient
+oracle,$10,CausalForestDML,0.02839,0.01916
+oracle,$10,LinearDML,0.02758,0.01834
+oracle,$10,T-Learner,0.0263,0.01706
+oracle,$10,Plain P(buy) model,0.00379,-0.00544
+oracle,$10,Perfect (true ITE),0.03126,0.02202
+oracle,$20,CausalForestDML,0.0479,0.03223
+oracle,$20,LinearDML,0.04708,0.03141
+oracle,$20,T-Learner,0.04632,0.03066
+oracle,$20,Plain P(buy) model,0.00657,-0.0091
+oracle,$20,Perfect (true ITE),0.05123,0.03556
+observed_ipw,$10,CausalForestDML,0.02824,0.01997
+observed_ipw,$10,LinearDML,0.02841,0.02014
+observed_ipw,$10,T-Learner,0.02649,0.01821
+observed_ipw,$10,Plain P(buy) model,0.00168,-0.00659
+observed_ipw,$20,CausalForestDML,0.04824,0.03252
+observed_ipw,$20,LinearDML,0.0478,0.03208
+observed_ipw,$20,T-Learner,0.04761,0.03189
+observed_ipw,$20,Plain P(buy) model,0.00529,-0.01043
