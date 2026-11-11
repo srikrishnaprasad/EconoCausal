@@ -22,6 +22,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from functools import lru_cache
 from lightgbm import LGBMClassifier, LGBMRegressor
 from econml.dml import LinearDML, CausalForestDML
 
@@ -210,6 +211,29 @@ def main():
                  "features": features}, MODELS / "dml_models.joblib")
     print("\nSaved: docs/dml_results.csv, dml_quintiles.csv, dml_validation.png, dml_quintiles.png")
     print("       data/processed/ite_test.parquet, models/dml_models.joblib")
+
+@lru_cache(maxsize=1)
+def _load_bundle():
+    """Load the saved models once (the file is ~50 MB), then reuse - important for the API."""
+    return joblib.load(MODELS / "dml_models.joblib")
+
+def predict_ite(df, model="causal_forest"):
+    """Raw customer rows in -> user_id, p0, ite_10, ite_20 out. Used by the API."""
+    import sys
+    sys.path.insert(0, str(PROJECT_ROOT))
+    from src.data.preprocess import transform_new_data
+
+    bundle = _load_bundle() 
+    X_new = transform_new_data(df).drop(columns="original_index")
+    Xn = X_new[bundle["features"]].to_numpy(float)
+
+    out = pd.DataFrame(index=df.index)
+    if "user_id" in df.columns:
+        out["user_id"] = df["user_id"].to_numpy()
+    out["p0"] = bundle["t_learner"][0].predict_proba(Xn)[:, 1]
+    for k in LEVELS:
+        out[f"ite_{k}"] = np.asarray(bundle[model].effect(Xn, T0=0, T1=k)).ravel()
+    return out.reset_index(drop=True)
 
 
 if __name__ == "__main__":
