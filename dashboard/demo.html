@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EconoCausal</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+:root{--bg:#0a0e1a;--side:#0d1220;--card:#121828;--card2:#182036;--line:#222c45;--text:#e9edf7;--muted:#8d99b5;--accent:#7c5cff;--accent2:#5b8cff;--ok:#19c39b;--warn:#f5a524;--err:#f0546d}
+[data-theme="light"]{--bg:#f3f5fa;--side:#fff;--card:#fff;--card2:#f4f6fb;--line:#dfe4ef;--text:#1b2438;--muted:#5d6b88;--accent:#6a4cf0;--accent2:#3b72f0;--ok:#0e9f7e;--warn:#c47d0a;--err:#d6334f}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{height:100%;margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.app{display:grid;grid-template-columns:250px 1fr;height:100vh}
+.side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow-y:auto;padding:18px 12px}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 8px 18px}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.brand b{display:block;font-size:17px}
+.brand small{color:var(--muted);font-size:10px;letter-spacing:.12em}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;margin:2px 0;border:0;border-radius:10px;background:transparent;color:var(--muted);font-size:14px;cursor:pointer;text-align:left}
+.nav-item:hover{background:var(--card2);color:var(--text)}
+.nav-item.active{background:linear-gradient(90deg,rgba(124,92,255,.24),rgba(91,140,255,.06));color:var(--text);box-shadow:inset 3px 0 0 var(--accent)}
+.side-foot{margin-top:auto;padding:16px 8px 0;color:var(--muted);font-size:12px;line-height:1.5}
+.main{overflow-y:auto}
+.top{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:var(--bg);border-bottom:1px solid var(--line)}
+.top h1{margin:0;font-size:18px}
+.tr{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.tr label{display:flex;flex-direction:row;align-items:center;gap:8px;margin:0}
+.pill{padding:5px 11px;border:1px solid var(--line);border-radius:999px;font-size:12px;color:var(--muted);background:var(--card)}
+.pill.live{color:var(--ok);border-color:var(--ok)}
+.pill.off{color:var(--err);border-color:var(--err)}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.content{padding:24px 28px 48px;max-width:1400px}
+.lead h2{margin:0 0 4px;font-size:26px}
+.lead p{margin:0 0 20px;color:var(--muted)}
+.page{display:none}
+.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.card-h h3{margin:0;font-size:15px}
+.grid{display:grid;gap:16px;margin-top:16px}
+.g-main{grid-template-columns:2fr 1fr}
+.g-3{grid-template-columns:1fr 1fr 1fr}
+.g-eq{grid-template-columns:1fr 1fr}
+.g-rx{grid-template-columns:330px 1fr;align-items:start}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.kpi span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpi b{display:block;font-size:26px;margin:6px 0 2px}
+.kpi small{color:var(--muted);font-size:12px}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.err,.error{color:var(--err)}.pending,.muted{color:var(--muted)}
+.small{font-size:12px}
+.pad{padding:18px}
+.chart{height:300px}
+label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);margin-bottom:14px}
+label.inline{flex-direction:row;align-items:center;gap:6px;margin:0;color:var(--text)}
+.checks{display:flex;gap:14px;margin-top:4px}
+input[type=number],input[type=text],select{padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card2);color:var(--text);font-size:14px;min-width:0}
+.btn{padding:10px 18px;border:0;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.dz{border:2px dashed var(--line);border-radius:14px;padding:34px 18px;text-align:center}
+.dz.drag{border-color:var(--accent);background:rgba(124,92,255,.08)}
+.dz p{margin:4px 0 10px}
+.row-item{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line)}
+.row-item+small{display:block;padding:4px 0 6px;color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;background:var(--muted)}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.error{background:var(--err)}
+.banner{padding:10px 14px;border-radius:10px;border:1px solid var(--line);margin-bottom:12px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.filters input{flex:1;min-width:200px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:500;font-size:12px}
+.scroll{overflow-x:auto}
+.badge{padding:3px 9px;border-radius:999px;font-size:12px}
+.b-Persuadable{background:rgba(124,92,255,.2);color:var(--accent)}
+.b-SureThing{background:rgba(25,195,155,.18);color:var(--ok)}
+.b-LostCause{background:rgba(245,165,36,.18);color:var(--warn)}
+.b-SleepingDog{background:rgba(240,84,109,.18);color:var(--err)}
+.pager{display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.narrow{max-width:520px}
+.gate{text-align:center;padding:48px}
+.rep img{width:100%;border-radius:10px;background:#fff}
+.links a{display:block;padding:8px 0;color:var(--accent);text-decoration:none;border-bottom:1px solid var(--line)}
+.busy{position:fixed;inset:0;background:rgba(5,8,16,.72);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:50;color:#fff;text-align:center;padding:20px}
+.spin{width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--accent);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#toast{position:fixed;right:24px;bottom:24px;padding:12px 18px;border-radius:10px;background:var(--card2);border:1px solid var(--line);z-index:60;max-width:420px}
+@media (max-width:1000px){.g-main,.g-3,.g-eq,.g-rx{grid-template-columns:1fr}.app{grid-template-columns:1fr;height:auto}.side{max-height:260px}.main{overflow:visible}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="logo"></div><div><b>EconoCausal</b><small>CAUSAL AI DASHBOARD</small></div></div>
+    <nav id="nav"></nav>
+    <div class="side-foot">Double Machine Learning for dynamic discount targeting.<br>Synthetic retail data, validated against a known truth.</div>
+  </aside>
+  <div class="main" id="main">
+    <header class="top">
+      <h1 id="pageTitle">Data Upload</h1>
+      <div class="tr">
+        <label>Causal model <select id="model"></select></label>
+        <span class="pill" id="dsPill">No data loaded</span>
+        <span class="pill live" id="apiPill">API live</span>
+      </div>
+    </header>
+    <div class="content">
+      <div id="gate" class="card gate" hidden><h3>Load data first</h3><p class="muted">This page needs a scored dataset.</p><button class="btn" onclick="show('data')">Go to Data Upload</button></div>
+
+      <section class="page" id="page-dashboard">
+        <div class="lead"><h2>Campaign overview</h2><p>Who buys only because of a discount, estimated with Double Machine Learning.</p></div>
+        <div class="kpis" id="kpis"></div>
+        <div class="grid g-main">
+          <div class="card"><div class="card-h"><h3>Individual treatment effect distribution</h3><select id="iteLevel"><option value="20">$20 discount</option><option value="10">$10 discount</option></select></div><div id="iteChart" class="chart"></div></div>
+          <div class="card"><div class="card-h"><h3>Customer segments</h3></div><div id="segChart" class="chart"></div></div>
+        </div>
+        <div class="grid g-3">
+          <div class="card"><div class="card-h"><h3>Uplift curve (model estimate)</h3><select id="curveLevel"><option value="20">$20</option><option value="10">$10</option></select></div><div id="upChart" class="chart"></div></div>
+          <div class="card"><div class="card-h"><h3>Qini curve (held-out test)</h3></div><div id="qiniChart" class="chart"></div></div>
+          <div class="card"><div class="card-h"><h3>Model health</h3></div><div id="healthList"></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-data">
+        <div class="lead"><h2>Data management</h2><p>Upload a campaign CSV or load the project dataset. Every customer is scored by all three causal models.</p></div>
+        <div class="grid g-eq" style="margin-top:0">
+          <div class="card"><div class="card-h"><h3>Dataset upload</h3></div>
+            <div class="dz" id="dz"><p><b>Drag and drop a CSV here</b></p><p class="muted small">CSV with the same customer columns as the project dataset</p><button class="btn ghost" id="btnBrowse">Browse file</button><input type="file" id="file" accept=".csv" hidden></div>
+            <div class="btn-row"><button class="btn" id="btnProject">Load project dataset (all rows)</button><button class="btn ghost" id="btnSample">Quick sample (5,000)</button></div>
+            <p class="muted small">Required columns: income_bracket, is_new_customer, buys_mens, buys_womens, months_since_last_purchase, past_spend, site_visits_90d, loyalty_score, coupon_usage_rate, age_group, region_type, purchase_channel. The columns user_id, discount_amount and purchased are optional.</p>
+          </div>
+          <div class="card"><div class="card-h"><h3>Validation status</h3></div><div id="valList"></div><div class="btn-row"><button class="btn" id="btnOpen">Open dashboard</button></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-causal">
+        <div class="lead"><h2>Causal analysis</h2><p>How accurate are the estimates, and was the comparison fair? Results use the held-out test set.</p></div>
+        <div class="grid g-eq" style="margin-top:0">
+          <div class="card"><div class="card-h"><h3>Effect accuracy by method</h3></div><div class="scroll"><table id="accTbl"></table></div><p class="muted small">ATE is the average effect in percentage points. ITE correlation compares each customer's estimate with the synthetic truth.</p></div>
+          <div class="card"><div class="card-h"><h3>Qini coefficient (extra purchases per 100 customers above random)</h3></div><div class="scroll"><table id="qiniTbl"></table></div></div>
+        </div>
+        <div class="grid g-eq">
+          <div class="card"><div class="card-h"><h3>Propensity overlap</h3><span class="pills" id="smdPills"></span></div><div id="propChart" class="chart"></div></div>
+          <div class="card"><div class="card-h"><h3>Covariate balance (SMD)</h3></div><div class="scroll"><table id="balTbl"></table></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-customers">
+        <div class="lead"><h2>Customer analysis</h2><p>Browse, filter and inspect individual treatment effects.</p></div>
+        <div class="kpis" id="custKpis"></div>
+        <div class="card filters" style="margin-bottom:0">
+          <input type="text" id="custSearch" placeholder="Search by customer id">
+          <select id="custCat"><option value="All">All categories</option><option>Persuadable</option><option>Sure Thing</option><option>Lost Cause</option><option>Sleeping Dog</option></select>
+          <select id="custAge"><option value="All">All age groups</option></select>
+          <select id="custSort"><option value="ite_20">Sort: effect of $20</option><option value="ite_10">Sort: effect of $10</option><option value="p0">Sort: buy chance</option><option value="recommended_discount">Sort: recommended discount</option><option value="user_id">Sort: customer id</option></select>
+          <select id="custSize"><option>25</option><option>50</option><option>100</option></select>
+        </div>
+        <div class="card" style="margin-top:16px"><div class="scroll"><table id="custTbl"></table></div>
+          <div class="pager"><button class="btn ghost" id="pgPrev">Previous</button><span id="pgInfo" class="muted"></span><button class="btn ghost" id="pgNext">Next</button></div></div>
+      </section>
+
+      <section class="page" id="page-prescription">
+        <div class="lead"><h2>Prescription</h2><p>Prescribe optimized discounts under a fixed budget using Double ML treatment estimates.</p></div>
+        <div class="grid g-rx" style="margin-top:0">
+          <div class="card"><div class="card-h"><h3>Budget constraints</h3></div>
+            <label>Total discount budget ($)<input type="number" id="rxBudget" value="20000" min="0" step="500"></label>
+            <label>Profit per sale ($, assumption)<input type="number" id="rxProfit" value="100" min="1" step="5"></label>
+            <label>Allowed discounts<span class="checks"><label class="inline"><input type="checkbox" checked disabled> $0</label><label class="inline"><input class="lvl" type="checkbox" value="10" checked> $10</label><label class="inline"><input class="lvl" type="checkbox" value="20" checked> $20</label></span></label>
+            <label>Causal model<select id="rxModel"></select></label>
+            <label>Optimizer algorithm<select id="rxMethod"></select></label>
+            <button class="btn" id="btnRun" style="width:100%">Run optimization</button>
+          </div>
+          <div>
+            <div class="card" id="rxEmpty"><p class="muted">Set your budget and click Run optimization.</p></div>
+            <div id="rxResult" hidden>
+              <div class="kpis" id="rxKpis"></div>
+              <div class="card" style="margin-top:16px"><p id="rxSummary" style="margin:0 0 12px"></p><div id="rxMix" class="chart" style="height:240px"></div></div>
+              <div class="card" style="margin-top:16px"><div class="card-h"><h3>Allocation (top 300 by expected profit)</h3><a class="btn ghost" id="btnCsvDl" href="#">Download full CSV</a></div><div class="scroll"><table id="rxTbl"></table></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-optimization">
+        <div class="lead"><h2>Optimization</h2><p>Compare optimizer algorithms and see how profit grows with the budget.</p></div>
+        <div class="card"><p id="optParams" class="muted" style="margin-top:0"></p><div class="btn-row" style="margin-top:0"><button class="btn" id="btnCompare">Compare optimizer algorithms</button><button class="btn ghost" id="btnSweep">Run budget sweep</button></div></div>
+        <div class="grid g-eq">
+          <div class="card"><div class="card-h"><h3>Algorithm comparison</h3></div><div id="cmpChart" class="chart"></div><div class="scroll"><table id="cmpTbl"></table></div></div>
+          <div class="card"><div class="card-h"><h3>Profit vs budget</h3></div><div id="swpChart" class="chart"></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-reports">
+        <div class="lead"><h2>Reports</h2><p>Charts and tables written by your analysis scripts.</p></div>
+        <div class="grid g-eq rep" id="repImgs" style="margin-top:0"></div>
+        <div class="card" style="margin-top:16px"><div class="card-h"><h3>Downloadable tables</h3></div><div class="links" id="repLinks"></div></div>
+      </section>
+
+      <section class="page" id="page-monitoring">
+        <div class="lead"><h2>System monitoring</h2><p>Pipeline health and data drift against the training data.</p></div>
+        <div class="grid g-eq" style="margin-top:0">
+          <div class="card"><div class="card-h"><h3>System health</h3></div><div id="sysList"></div></div>
+          <div class="card"><div class="card-h"><h3>Data drift (KS test)</h3></div><div id="driftBanner" class="banner muted">Load data to run the drift check.</div><div class="scroll"><table id="driftTbl"></table></div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="lead"><h2>Settings</h2><p>Defaults used across the dashboard.</p></div>
+        <div class="card narrow">
+          <label>Theme<select id="setTheme"><option value="dark">Dark</option><option value="light">Light</option></select></label>
+          <label>Default causal model<select id="setModel"></select></label>
+          <label>Default optimizer<select id="setMethod"></select></label>
+          <label>Profit per sale ($)<input type="number" id="setProfit" value="100" min="1"></label>
+          <p class="muted small">Customer segments use the $20 effect: Persuadable above +2 pp, Sleeping Dog below -2 pp, otherwise Sure Thing when the no-discount buy chance is at least 50%, else Lost Cause. Profit per sale is an assumption, so state it when you present results.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div id="busy" class="busy" hidden><div class="spin"></div><p id="busyMsg"></p></div>
+<div id="toast" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n0 = v => Number(v).toLocaleString();
+const money = v => (v < 0 ? '-$' : '$') + Math.abs(v).toLocaleString(undefined, {maximumFractionDigits: 0});
+const pp = v => v == null ? '-' : (v * 100).toFixed(1);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const qs = o => Object.entries(o).filter(e => e[1] !== undefined && e[1] !== null && e[1] !== '').map(e => encodeURIComponent(e[0]) + '=' + encodeURIComponent(e[1])).join('&');
+const post = b => ({method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(b)});
+const tbl = (head, rows) => '<thead><tr>' + head.map(h => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + rows.map(r => '<tr>' + r.map(c => '<td>' + c + '</td>').join('') + '</tr>').join('') + '</tbody>';
+const kpi = (t, v, s, c) => '<div class="kpi"><span>' + t + '</span><b class="' + (c || '') + '">' + v + '</b><small>' + s + '</small></div>';
+
+const S = {dataset: null, info: null, model: 'causal_forest', method: 'lagrangian', V: 100, page: 'data', rx: null,
+  cust: {page: 1, size: 25, cat: 'All', age: 'All', sort: 'ite_20', q: ''}};
+const MODELS = {t_learner: 'T-Learner', linear_dml: 'LinearDML', causal_forest: 'CausalForestDML'};
+const METHODS = {lagrangian: 'Lagrangian (fast, near-optimal)', greedy: 'Greedy by profit per dollar', milp: 'MILP (exact, slower)'};
+const SEGS = ['Persuadable', 'Sure Thing', 'Lost Cause', 'Sleeping Dog'];
+const SEGCOL = ['#7c5cff', '#19c39b', '#f5a524', '#f0546d'];
+const PAGES = [['dashboard', 'Dashboard', 'grid', true], ['data', 'Data Upload', 'upload', false], ['causal', 'Causal Analysis', 'search', false],
+  ['customers', 'Customer Analysis', 'users', true], ['prescription', 'Prescription', 'target', true], ['optimization', 'Optimization', 'trend', true],
+  ['reports', 'Reports', 'file', false], ['monitoring', 'System Monitoring', 'activity', false], ['settings', 'Settings', 'sliders', false]];
+const ICONS = {
+  grid: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+  upload: '<polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>',
+  search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+  users: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  target: '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  trend: '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
+  activity: '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  sliders: '<line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>'};
+const svg = n => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICONS[n] + '</svg>';
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  let d = null;
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok) {
+    const msg = d && typeof d.detail === 'string' ? d.detail : 'Request failed (' + r.status + ')';
+    if (r.status === 404 && /dataset_id/.test(msg)) { S.dataset = null; S.info = null; pill(); }
+    throw new Error(msg);
+  }
+  return d;
+}
+const fail = e => toast(e.message, 'err');
+let toastTimer;
+function toast(msg, kind) { const t = $('toast'); t.textContent = msg; t.className = kind || ''; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 4000); }
+const busy = (on, msg) => { $('busy').hidden = !on; if (msg) $('busyMsg').textContent = msg; };
+function pill() { $('dsPill').textContent = S.dataset ? n0(S.info.n_rows) + ' customers' : 'No data loaded'; }
+
+function L(xt, yt, extra) {
+  const g = css('--line'), ax = t => ({title: {text: t || ''}, gridcolor: g, zerolinecolor: g, linecolor: g});
+  return Object.assign({margin: {t: 14, r: 14, b: 56, l: 60}, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
+    font: {color: css('--text'), size: 12}, xaxis: ax(xt), yaxis: ax(yt), legend: {orientation: 'h', y: -0.28}}, extra || {});
+}
+function plot(id, traces, layout) { const el = $(id); if (!el.data) el.innerHTML = ''; return Plotly.react(el, traces, layout, {responsive: true, displayModeBar: false}); }
+function note(id, msg) { Plotly.purge(id); $(id).innerHTML = '<p class="muted pad">' + msg + '</p>'; }
+const healthHtml = list => list.map(i => '<div class="row-item"><span><i class="dot ' + i.status + '"></i>' + esc(i.name) + '</span><b class="' + i.status + '">' + esc(i.status.toUpperCase()) + '</b></div><small>' + esc(i.detail) + '</small>').join('');
+
+/* navigation */
+$('nav').innerHTML = PAGES.map(p => '<button class="nav-item" data-page="' + p[0] + '">' + svg(p[2]) + '<span>' + p[1] + '</span></button>').join('');
+document.querySelectorAll('.nav-item').forEach(b => b.onclick = () => show(b.dataset.page));
+const RENDER = {dashboard: renderDashboard, data: renderData, causal: renderCausal, customers: renderCustomers, prescription: renderPrescription,
+  optimization: renderOptimization, reports: renderReports, monitoring: renderMonitoring, settings: async () => {}};
+function show(name) {
+  S.page = name;
+  const meta = PAGES.find(p => p[0] === name);
+  $('pageTitle').textContent = meta[1];
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === name));
+  const gated = meta[3] && !S.dataset;
+  $('gate').hidden = !gated;
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', !gated && p.id === 'page-' + name));
+  $('main').scrollTop = 0;
+  if (!gated) RENDER[name]().catch(fail);
+}
+
+/* selects and settings */
+const opts = o => Object.entries(o).map(e => '<option value="' + e[0] + '">' + e[1] + '</option>').join('');
+['model', 'rxModel', 'setModel'].forEach(id => $(id).innerHTML = opts(MODELS));
+['rxMethod', 'setMethod'].forEach(id => $(id).innerHTML = opts(METHODS));
+function sync() {
+  ['model', 'rxModel', 'setModel'].forEach(id => $(id).value = S.model);
+  ['rxMethod', 'setMethod'].forEach(id => $(id).value = S.method);
+  ['rxProfit', 'setProfit'].forEach(id => $(id).value = S.V);
+}
+['model', 'rxModel', 'setModel'].forEach(id => $(id).onchange = () => { S.model = $(id).value; S.rx = null; $('rxResult').hidden = true; $('rxEmpty').hidden = false; sync(); show(S.page); });
+['rxMethod', 'setMethod'].forEach(id => $(id).onchange = () => { S.method = $(id).value; sync(); });
+['rxProfit', 'setProfit'].forEach(id => $(id).onchange = () => { S.V = Math.max(1, +$(id).value || 100); sync(); });
+$('setTheme').onchange = () => { document.documentElement.dataset.theme = $('setTheme').value; show(S.page); };
+sync();
+
+/* data page */
+async function loadData(call) {
+  busy(true, 'Scoring customers with all three causal models. The full dataset can take up to a minute...');
+  try {
+    const d = await call();
+    S.dataset = d.dataset_id; S.info = d; S.rx = null;
+    $('rxResult').hidden = true; $('rxEmpty').hidden = false;
+    $('custAge').innerHTML = '<option value="All">All age groups</option>'; S.cust.age = 'All'; S.cust.page = 1;
+    pill(); toast('Loaded ' + n0(d.n_rows) + ' customers', 'ok');
+    show('dashboard');
+  } catch (e) { fail(e); }
+  busy(false);
+}
+function upload(f) {
+  if (!/\.csv$/i.test(f.name)) return toast('Please choose a .csv file', 'err');
+  const fd = new FormData(); fd.append('file', f);
+  loadData(() => api('/upload', {method: 'POST', body: fd}));
+}
+const dz = $('dz');
+['dragenter', 'dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+dz.addEventListener('drop', e => { if (e.dataTransfer.files[0]) upload(e.dataTransfer.files[0]); });
+$('btnBrowse').onclick = () => $('file').click();
+$('file').onchange = () => { if ($('file').files[0]) upload($('file').files[0]); };
+$('btnProject').onclick = () => loadData(() => api('/load-project?n=0', {method: 'POST'}));
+$('btnSample').onclick = () => loadData(() => api('/load-project?n=5000', {method: 'POST'}));
+$('btnOpen').onclick = () => show('dashboard');
+async function renderData() {
+  const el = $('valList');
+  if (!S.info) { el.innerHTML = '<p class="muted">No dataset loaded yet.</p>'; return; }
+  const c = S.info.checks, row = (a, b, k) => '<div class="row-item"><span>' + a + '</span><b class="' + k + '">' + b + '</b></div>';
+  el.innerHTML = row('Dataset', esc(S.info.name), 'ok') + row('Rows', n0(S.info.n_rows), 'ok') +
+    row('Required feature columns', c.required_columns + ' of ' + c.required_columns + ' present', 'ok') +
+    row('Missing values in features', n0(c.missing_cells), c.missing_cells ? 'warn' : 'ok') +
+    row('Treatment (discount_amount)', c.has_treatment ? 'present' : 'not in file', c.has_treatment ? 'ok' : 'muted') +
+    row('Outcome (purchased)', c.has_outcome ? 'present' : 'not in file', c.has_outcome ? 'ok' : 'muted') +
+    row('Ground truth (true_ite)', c.has_ground_truth ? 'present, validation only' : 'not in file', c.has_ground_truth ? 'ok' : 'muted');
+}
+
+/* dashboard */
+async function renderDashboard() {
+  const lvl = $('iteLevel').value, cl = $('curveLevel').value;
+  const [sm, hist, up, qn, hc] = await Promise.all([
+    api('/summary?' + qs({dataset_id: S.dataset, model: S.model})),
+    api('/ite-hist?' + qs({dataset_id: S.dataset, model: S.model, discount: lvl})),
+    api('/uplift-curve?' + qs({source: 'predicted', dataset_id: S.dataset, model: S.model, discount: cl})),
+    api('/uplift-curve?' + qs({source: 'validated', model: S.model, discount: cl})).catch(() => null),
+    api('/health-check').catch(() => [])]);
+  const pers = sm.segments['Persuadable'] || 0;
+  const sub = k => [sm['naive_ate_' + k] != null ? 'naive ' + pp(sm['naive_ate_' + k]) + ' pp' : null,
+    sm['true_ate_' + k] != null ? 'true ' + pp(sm['true_ate_' + k]) + ' pp' : null].filter(Boolean).join(' · ') || 'model estimate';
+  $('kpis').innerHTML = kpi('Total customers', n0(sm.n_customers), 'scored with ' + MODELS[S.model]) +
+    kpi('Received a discount', sm.n_treated == null ? '-' : n0(sm.n_treated), 'in the campaign data') +
+    kpi('No discount', sm.n_control == null ? '-' : n0(sm.n_control), 'control group') +
+    kpi('Avg effect of $10', pp(sm.ate_10) + ' pp', sub(10)) + kpi('Avg effect of $20', pp(sm.ate_20) + ' pp', sub(20)) +
+    kpi('Persuadables', (100 * pers / sm.n_customers).toFixed(1) + '%', n0(pers) + ' customers', 'ok');
+  const e = hist.edges, c = hist.counts.map((_, i) => (e[i] + e[i + 1]) / 2 * 100), w = hist.counts.map((_, i) => (e[i + 1] - e[i]) * 100);
+  plot('iteChart', [
+    {x: c, y: hist.counts.map((v, i) => c[i] < 0 ? v : 0), width: w, type: 'bar', name: 'Negative effect', marker: {color: css('--err')}},
+    {x: c, y: hist.counts.map((v, i) => c[i] >= 0 ? v : 0), width: w, type: 'bar', name: 'Positive effect', marker: {color: css('--accent')}}],
+    L('Effect on purchase probability (pp)', 'Customers', {barmode: 'overlay'}));
+  plot('segChart', [{type: 'pie', hole: 0.62, labels: SEGS, values: SEGS.map(s => sm.segments[s] || 0), marker: {colors: SEGCOL}, textinfo: 'percent', sort: false}],
+    L(null, null, {margin: {t: 10, r: 10, b: 10, l: 10}, legend: {orientation: 'h', y: -0.02},
+      annotations: [{text: (100 * pers / sm.n_customers).toFixed(0) + '%<br>persuadable', showarrow: false, font: {size: 14}}]}));
+  const x = up.x.map(v => v * 100);
+  plot('upChart', [{x, y: up.model_y.map(v => v * 100), name: 'Causal model', mode: 'lines', line: {color: css('--accent'), width: 3}, fill: 'tozeroy', fillcolor: 'rgba(124,92,255,0.15)'},
+    {x, y: up.random_y.map(v => v * 100), name: 'Random targeting', mode: 'lines', line: {color: css('--muted'), dash: 'dot'}}],
+    L('Customers targeted (%)', 'Extra purchases per 100 customers'));
+  if (qn) {
+    const qx = qn.x.map(v => v * 100);
+    plot('qiniChart', [{x: qx, y: qn.model_y.map(v => v * 100), name: MODELS[S.model], mode: 'lines', line: {color: css('--ok'), width: 3}},
+      {x: qx, y: qn.perfect_y.map(v => v * 100), name: 'Perfect ranking', mode: 'lines', line: {color: css('--warn'), dash: 'dash'}},
+      {x: qx, y: qn.random_y.map(v => v * 100), name: 'Random targeting', mode: 'lines', line: {color: css('--muted'), dash: 'dot'}}],
+      L('Customers targeted (%)', 'Extra purchases per 100 customers'));
+  } else note('qiniChart', 'Run python src/causal/dml_model.py to create the held-out test results.');
+  $('healthList').innerHTML = healthHtml(hc);
+}
+$('iteLevel').onchange = $('curveLevel').onchange = () => { if (S.dataset) renderDashboard().catch(fail); };
+
+/* causal analysis */
+async function renderCausal() {
+  const [mc, pr] = await Promise.all([api('/model-compare').catch(() => ({accuracy: [], qini: []})), api('/propensity').catch(() => null)]);
+  $('accTbl').innerHTML = tbl(['Method', 'Discount', 'Estimated ATE (pp)', 'True ATE (pp)', 'ITE correlation', 'ITE RMSE (pp)'],
+    mc.accuracy.map(r => [esc(r.model), esc(r.discount), pp(r['estimated ATE']), pp(r['true ATE']), r['ITE correlation'] == null ? '-' : r['ITE correlation'].toFixed(3), pp(r['ITE RMSE'])]));
+  const meths = [...new Set(mc.qini.map(r => r.method))], q = {};
+  mc.qini.forEach(r => q[r.method + r.discount] = r['Qini coefficient']);
+  const qv = v => v == null ? '-' : (v * 100).toFixed(2);
+  $('qiniTbl').innerHTML = tbl(['Method', '$10', '$20'], meths.map(m => [esc(m), qv(q[m + '$10']), qv(q[m + '$20'])]));
+  if (!pr) { note('propChart', 'Run python src/data/propensity.py first.'); $('balTbl').innerHTML = ''; $('smdPills').innerHTML = ''; return; }
+  const e = pr.edges, x = pr.groups['0'].map((_, i) => (e[i] + e[i + 1]) / 2);
+  const col = {'0': css('--muted'), '10': css('--accent2'), '20': css('--accent')};
+  plot('propChart', ['0', '10', '20'].map(g => ({x, y: pr.groups[g], name: 'Received $' + g, mode: 'lines', line: {color: col[g], width: 2.5}})),
+    L('Estimated chance of receiving the $20 discount', 'Density'));
+  $('smdPills').innerHTML = pr.worst_before == null ? '' : '<span class="pill">Worst |SMD| before ' + pr.worst_before.toFixed(3) + '</span><span class="pill live">after ' + pr.worst_after.toFixed(3) + '</span>';
+  const cell = v => '<span class="' + (Math.abs(v) > 0.1 ? 'warn' : '') + '">' + v.toFixed(3) + '</span>';
+  $('balTbl').innerHTML = tbl(['Feature', '$10 before', '$10 after', '$20 before', '$20 after'],
+    pr.balance.map(r => [esc(r.feature.replace(/^(numeric|categorical)__/, '')), cell(r.b10), cell(r.a10), cell(r.b20), cell(r.a20)]));
+}
+
+/* customers */
+async function renderCustomers() {
+  const c = S.cust;
+  const d = await api('/customers?' + qs({dataset_id: S.dataset, model: S.model, category: c.cat, age_group: c.age, search: c.q, sort: c.sort,
+    desc: c.sort === 'user_id' ? 'false' : 'true', page: c.page, page_size: c.size, profit_per_sale: S.V}));
+  if ($('custAge').options.length <= 1) $('custAge').innerHTML = '<option value="All">All age groups</option>' + d.age_groups.map(a => '<option>' + esc(a) + '</option>').join('');
+  $('custKpis').innerHTML = kpi('Filtered customers', n0(d.kpis.filtered), 'match the filters') + kpi('Persuadables', n0(d.kpis.persuadables), 'in this selection', 'ok') +
+    kpi('Average effect of $20', pp(d.kpis.avg_ite_20) + ' pp', 'selection average') + kpi('Recommended for a discount', n0(d.kpis.recommended), 'ignoring the budget');
+  $('custTbl').innerHTML = tbl(['Customer', 'Age group', 'Segment', 'Buy chance, no discount (%)', 'Effect of $10 (pp)', 'Effect of $20 (pp)', 'Recommended discount'],
+    d.rows.map(r => [esc(r.user_id), esc(r.age_group || '-'), '<span class="badge b-' + r.segment.replace(' ', '') + '">' + r.segment + '</span>', pp(r.p0), pp(r.ite_10), pp(r.ite_20), r.recommended_discount ? '$' + r.recommended_discount : '-']));
+  const pages = Math.max(1, Math.ceil(d.total / d.page_size));
+  $('pgInfo').textContent = 'Page ' + d.page + ' of ' + pages + ' · ' + n0(d.total) + ' customers';
+  $('pgPrev').disabled = d.page <= 1; $('pgNext').disabled = d.page >= pages;
+}
+let tm;
+$('custSearch').oninput = () => { clearTimeout(tm); tm = setTimeout(() => { S.cust.q = $('custSearch').value.trim(); S.cust.page = 1; renderCustomers().catch(fail); }, 300); };
+[['custCat', 'cat'], ['custAge', 'age'], ['custSort', 'sort'], ['custSize', 'size']].forEach(p => $(p[0]).onchange = () => {
+  S.cust[p[1]] = p[1] === 'size' ? +$(p[0]).value : $(p[0]).value; S.cust.page = 1; renderCustomers().catch(fail); });
+$('pgPrev').onclick = () => { S.cust.page--; renderCustomers().catch(fail); };
+$('pgNext').onclick = () => { S.cust.page++; renderCustomers().catch(fail); };
+
+/* prescription and optimization */
+const levels = () => [...document.querySelectorAll('.lvl:checked')].map(c => +c.value);
+const rxBody = () => ({dataset_id: S.dataset, model: S.model, method: S.method, budget: +$('rxBudget').value || 0, profit_per_sale: S.V, levels: levels()});
+function renderRx(d) {
+  $('rxEmpty').hidden = true; $('rxResult').hidden = false;
+  $('rxKpis').innerHTML = kpi('Extra purchases', n0(Math.round(d.extra_purchases)), 'expected incremental sales') +
+    kpi('Incremental profit', money(d.incremental_profit), 'after discount cost', d.incremental_profit >= 0 ? 'ok' : 'err') +
+    kpi('Budget used', money(d.total_cost), 'of ' + money(d.budget)) + kpi('ROI', d.roi == null ? '-' : d.roi.toFixed(0) + '%', 'profit per discount dollar', 'ok') +
+    kpi('Customers targeted', n0(d.n_targeted), (100 * d.n_targeted / d.n_customers).toFixed(0) + '% of ' + n0(d.n_customers)) +
+    kpi('Run time', d.seconds.toFixed(2) + ' s', esc(d.method_label));
+  $('rxSummary').textContent = d.summary_text + (d.note ? ' ' + d.note : '');
+  const ks = Object.keys(d.mix);
+  plot('rxMix', [{x: ks.map(k => k === '0' ? 'No discount' : '$' + k), y: ks.map(k => d.mix[k]), type: 'bar', marker: {color: [css('--muted'), css('--accent2'), css('--accent')]}}],
+    L('Discount given', 'Customers', {margin: {t: 10, r: 10, b: 44, l: 60}}));
+  $('rxTbl').innerHTML = tbl(['Customer', 'Discount ($)', 'Buy chance (%)', 'Effect of $10 (pp)', 'Effect of $20 (pp)', 'Expected cost ($)', 'Expected profit ($)'],
+    d.allocation.map(r => [esc(r.user_id), r.discount, pp(r.p0), pp(r.ite_10), pp(r.ite_20), r.expected_cost.toFixed(2), r.incremental_profit.toFixed(2)]));
+  $('btnCsvDl').href = '/allocation.csv?dataset_id=' + S.dataset;
+}
+$('btnRun').onclick = async () => {
+  if (!levels().length) return toast('Allow at least one discount level', 'err');
+  busy(true, 'Optimizing with ' + METHODS[S.method] + '...');
+  try { S.rx = await api('/optimize', post(rxBody())); renderRx(S.rx); } catch (e) { fail(e); }
+  busy(false);
+};
+async function renderPrescription() { sync(); if (S.rx) renderRx(S.rx); }
+async function renderOptimization() {
+  $('optParams').textContent = 'Using ' + MODELS[S.model] + ', budget ' + money(+$('rxBudget').value || 0) + ', profit per sale $' + S.V + ' and the discounts allowed on the Prescription page. Change them there.';
+}
+$('btnCompare').onclick = async () => {
+  if (!levels().length) return toast('Allow at least one discount level', 'err');
+  busy(true, 'Running all three optimizers. MILP can take up to 15 seconds...');
+  try {
+    const r = await api('/optimize/compare', post(rxBody()));
+    plot('cmpChart', [{x: r.map(m => m.label), y: r.map(m => m.profit), type: 'bar', marker: {color: [css('--accent'), css('--accent2'), css('--ok')]}}], L('Algorithm', 'Expected incremental profit ($)', {margin: {t: 10, r: 10, b: 70, l: 70}}));
+    $('cmpTbl').innerHTML = tbl(['Algorithm', 'Profit', 'Spend', 'Targeted', 'Extra purchases', 'Time (s)', 'Note'],
+      r.map(m => [esc(m.label), money(m.profit), money(m.cost), n0(m.targeted), n0(Math.round(m.extra_purchases)), m.seconds.toFixed(2), esc(m.note || '-')]));
+  } catch (e) { fail(e); }
+  busy(false);
+};
+$('btnSweep').onclick = async () => {
+  if (!levels().length) return toast('Allow at least one discount level', 'err');
+  busy(true, 'Running the budget sweep...');
+  try {
+    const r = await api('/optimize/sweep', post(rxBody()));
+    const x = r.points.map(p => p.budget);
+    plot('swpChart', [{x, y: r.points.map(p => p.profit), name: 'Expected profit', mode: 'lines+markers', line: {color: css('--ok'), width: 3}},
+      {x, y: r.points.map(p => p.cost), name: 'Discount spend', mode: 'lines+markers', line: {color: css('--accent'), width: 2}}], L('Budget ($)', 'Dollars'));
+  } catch (e) { fail(e); }
+  busy(false);
+};
+
+/* reports and monitoring */
+async function renderReports() {
+  const imgs = [['dml_validation.png', 'Predicted vs true effect'], ['dml_quintiles.png', 'Ranking check by quintile'], ['qini_curves.png', 'Qini curves'], ['propensity_overlap.png', 'Propensity overlap']];
+  $('repImgs').innerHTML = imgs.map(i => '<div class="card"><div class="card-h"><h3>' + i[1] + '</h3></div><img src="/files/' + i[0] + '" alt="' + i[1] + '" onerror="this.replaceWith(document.createTextNode(\'Not generated yet\'))"></div>').join('');
+  const files = ['dml_results.csv', 'dml_quintiles.csv', 'qini_summary.csv', 'qini_business_view.csv', 'propensity_balance.csv', 'refutation_results.csv'];
+  $('repLinks').innerHTML = files.map(f => '<a href="/files/' + f + '" download>' + f + '</a>').join('');
+}
+async function renderMonitoring() {
+  $('sysList').innerHTML = healthHtml(await api('/health-check').catch(() => []));
+  if (!S.dataset) return;
+  const rows = await api('/drift?' + qs({dataset_id: S.dataset})), bad = rows.filter(r => r.drifted), b = $('driftBanner');
+  b.className = 'banner ' + (bad.length ? 'warn' : 'ok');
+  b.textContent = bad.length ? 'Drift warning: ' + bad.map(r => r.feature).join(', ') + ' differ from the training data.' : 'No data drift detected on ' + rows.length + ' numeric features.';
+  $('driftTbl').innerHTML = tbl(['Feature', 'KS statistic', 'p-value', 'Status'], rows.map(r => [esc(r.feature), r.statistic.toFixed(3), r.p_value.toExponential(1), '<b class="' + (r.drifted ? 'warn' : 'ok') + '">' + (r.drifted ? 'DRIFT' : 'OK') + '</b>']));
+}
+
+/* api status */
+async function ping() { try { await api('/health'); $('apiPill').className = 'pill live'; $('apiPill').textContent = 'API live'; } catch (e) { $('apiPill').className = 'pill off'; $('apiPill').textContent = 'API offline'; } }
+setInterval(ping, 8000);
+show('data');
+</script>
+</body>
+</html>
